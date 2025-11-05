@@ -82,6 +82,7 @@ predict = st.button("predict!")
 if predict:
     x_new = np.array([country, education, experience])
     X_new_df = pd.DataFrame([x_new], columns = columns)
+    X_new_prepared = transform.fit_transform(X_new_df)
     salary = model.predict(X_new_df)
 
     st.subheader(f"The estimated salary is ${salary[0]:.2f}")
