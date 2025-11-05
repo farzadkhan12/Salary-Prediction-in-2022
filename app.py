@@ -1,37 +1,13 @@
-import joblib
 import streamlit as st
 import numpy as np
 import pandas as pd
+import joblib
 
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
-from sklearn.ensemble import GradientBoostingRegressor
+model = joblib.load('gbr_n.joblib')
+st.title('Salary Prediction in 2022')
+st.write("""### We need some information to predict the salary""")
 
-
-# --- Preprocessing setup ---
-numeric_pipe = Pipeline([
-    ("Scaler", StandardScaler())
-])
-
-cat_pipe = Pipeline([
-    ("OneHotEncoder", OneHotEncoder(handle_unknown="ignore"))
-])
-
-transform = ColumnTransformer([
-    ("numeric", numeric_pipe, ["YearsCodePro"]),
-    ("cat", cat_pipe, ["EdLevel", "Country"])
-])
-
-# --- Load trained model ---
-model = joblib.load("gbr_n.joblib")
-
-# --- Streamlit UI ---
-st.title("💼 Salary Prediction (2022)")
-
-columns = ['Country', 'EdLevel', 'YearsCodePro']
-
-countries = [
+countries = (
     "United States of America",
     "Iran, Islamic Republic of...",
     "India",
@@ -48,7 +24,7 @@ countries = [
     "Russian Federation",
     "Sweden",
     "Switzerland",
-    "Palestine",
+    "Israel",
     "Austria",
     "Portugal",
     "Denmark",
@@ -62,28 +38,26 @@ countries = [
     "Mexico",
     "South Africa",
     "Pakistan"
-]
 
-education_levels = (
+)
+
+education = (
     "Less than a Bachelors",
     "Bachelor’s degree",
     "Master’s degree"
 )
 
-country = st.selectbox("🌍 Country", countries)
-education = st.selectbox("🎓 Education Level", education_levels)
-experience = st.slider("🧠 Years of Experience", 0, 50, 1)
+country = st.selectbox("Country", countries)
+education = st.selectbox("Education Level", education)
+expericence = st.slider("Years of Experience", 0, 50, 3)
 
-# --- Predict button ---
-if st.button("🚀 Predict!"):
-    # ساخت ورودی جدید
-    x_new = np.array([country, education, experience])
-    X_new_df = pd.DataFrame([x_new], columns=columns)
+columns = ['Country', 'EdLevel', 'YearsCodePro']
 
-    # اجرای transform روی داده ورودی
-    X_new_prepared = transform.fit_transform(X_new_df)
+ok = st.button("Calculate Salary")
+if ok:
+    X_new = np.array([countries,education,expericence])
+    X_new_df = pd.DataFrame([X_new], columns = columns)
+    salary = model.predict(X_new_df)
+    
+    st.subheader(f"The estimated salary is ${salary[0]:.2f}")\
 
-    # پیش‌بینی
-    salary = model.predict(X_new_prepared)
-
-    st.subheader(f"💰 Estimated Salary: **${salary[0]:,.2f}**")
